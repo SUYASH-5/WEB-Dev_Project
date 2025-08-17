@@ -33,6 +33,34 @@ const enterClass = async (req, res) => {
     }
 };
 
+const saveClassActivity = async (req, res) => {
+    try {
+        const { classId } = req.params;
+        const { code, remark } = req.body;
+
+        const existingClass = await Class.findById(classId);
+        if (!existingClass) {
+            return res.status(404).json({ message: 'Class not found' });
+        }
+        if (existingClass.status !== 'started') {
+            return res.status(400).json({ message: 'Class is not currently active' });
+        }
+        if (!code || !remark) {
+            return res.status(400).json({ message: 'Code and remark are required' });
+        }
+
+        existingClass.code = code;
+        existingClass.remarks = remark;
+        await existingClass.save();
+
+        res.status(200).json({ message: 'Activity saved successfully', class: existingClass });
+    } catch (error) {
+        console.error('Error saving class activity:', error);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+}
+
 module.exports = {
-    enterClass
+    enterClass,
+    saveClassActivity
 };

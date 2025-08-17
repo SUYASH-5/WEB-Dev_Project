@@ -1,6 +1,7 @@
 To run the project run in dev mode following command:
 
 npm run seed
+
 npm run dev
 
 for an example on .env file requirments 

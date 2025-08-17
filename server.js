@@ -17,10 +17,12 @@ const  dbConnect  = require('./config/mongoDB');
 const authRouter = require('./routes/authenRouter'); 
 const classRouter = require('./routes/classRouter');
 const teacherRouter = require('./routes/TeachHandlerRouter');
+const codeRouter = require('./routes/codeRouter');
 app.use(express.json());
 
 socketHandler(io);
 
+app.use('/code', codeRouter);
 app.use('/validate', authRouter);
 app.use('/class', classRouter);
 app.use('/OnlyT', teacherRouter);

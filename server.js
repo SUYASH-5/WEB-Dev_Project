@@ -5,9 +5,13 @@ const app = express();
 require('dotenv').config();
 const  dbConnect  = require('./config/mongoDB');
 const authRouter = require('./routes/authenRouter'); 
+const classRouter = require('./routes/classRouter');
+const teacherRouter = require('./routes/TeachHandlerRouter');
 app.use(express.json());
 
 app.use('/validate', authRouter);
+app.use('/class', classRouter);
+app.use('/OnlyT', teacherRouter);
 
 dbConnect().then(() => {
     app.listen(process.env.PORT, () => {
@@ -21,8 +25,12 @@ cron.schedule('*/30 * * * * *', async () => {
     try {
         const currentTime = new Date();
         const result = await Class.updateMany(
-            {status: 'upcoming', startTime: { $lte: currentTime }}, 
-            {$set: {status: 'Started'} });
+            {status: 'upcoming', startTime: { $lte: currentTime }},
+            {$set: {status: 'Started'}}
+        );
+        if (result.modifiedCount > 0) {
+          console.log(`Updated ${result.modifiedCount} class(es) to 'started'`);
+        }
     } catch (error) {
         console.error('Error fetching upcoming classes:', error);
     }

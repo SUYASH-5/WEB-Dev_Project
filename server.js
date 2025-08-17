@@ -1,4 +1,6 @@
 const express =require('express');
+const cron = require('node-cron');
+const Class = require('./models/classDB');
 const app = express();
 require('dotenv').config();
 const  dbConnect  = require('./config/mongoDB');
@@ -10,6 +12,31 @@ app.use('/validate', authRouter);
 dbConnect().then(() => {
     app.listen(process.env.PORT, () => {
         console.log(`Server is running on port ${process.env.PORT}`);
+    });
+}).catch((error) => {
+    console.error('Database connection error:', error);
+});
+
+cron.schedule('*/30 * * * * *', async () => {
+    try {
+        const currentTime = new Date();
+        const result = await Class.updateMany(
+            {status: 'upcoming', startTime: { $lte: currentTime }}, 
+            {$set: {status: 'Started'} });
+    } catch (error) {
+        console.error('Error fetching upcoming classes:', error);
+    }
+});
+
+const adminApp=express();
+const adminRouter = require('./routes/adminRouter');
+
+adminApp.use(express.json());
+adminApp.use('/admin', adminRouter);
+
+dbConnect().then(() => {
+    adminApp.listen(process.env.AdminPORT, () => {
+        console.log(`Admin server is running on port ${process.env.AdminPORT}`);
     });
 }).catch((error) => {
     console.error('Database connection error:', error);

@@ -1,7 +1,17 @@
 const express =require('express');
+const app = express();
+const {createServer} =require('http');
+const {Server}=require('socket.io');
+const httpServer = createServer(app);
+const io = new Server(httpServer, {
+    cors: {
+        origin: '*'
+    }
+});
+const socketHandler=require('./socket/socketHandler');
+
 const cron = require('node-cron');
 const Class = require('./models/classDB');
-const app = express();
 require('dotenv').config();
 const  dbConnect  = require('./config/mongoDB');
 const authRouter = require('./routes/authenRouter'); 
@@ -9,12 +19,14 @@ const classRouter = require('./routes/classRouter');
 const teacherRouter = require('./routes/TeachHandlerRouter');
 app.use(express.json());
 
+socketHandler(io);
+
 app.use('/validate', authRouter);
 app.use('/class', classRouter);
 app.use('/OnlyT', teacherRouter);
 
 dbConnect().then(() => {
-    app.listen(process.env.PORT, () => {
+    httpServer.listen(process.env.PORT, () => {
         console.log(`Server is running on port ${process.env.PORT}`);
     });
 }).catch((error) => {

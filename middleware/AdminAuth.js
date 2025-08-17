@@ -1,8 +1,8 @@
-const jwt =require('jsonwebtoken');
-const Teacher = require('../models/teacherDB');
-const Student = require('../models/studentDB');
+require('dotenv').config();
+const Admin = require('../models/adminDB'); 
+const jwt = require('jsonwebtoken');
 
-const authMiddleware = async (req, res, next) => {
+const AdminAuth = async (req, res, next) => {
     const token = req.headers.authorization?.split(' ')[1];
     if (!token) {
         return res.status(401).json({ message: 'Unauthorized' });
@@ -12,13 +12,12 @@ const authMiddleware = async (req, res, next) => {
         return res.status(401).json({ message: 'Unauthorized' });
     }
     const { email } = userdata.data;
-    const user = await Teacher.findOne({ email }) || await Student.findOne({ email });
-    if (!user) {
+    const admin = await Admin.findOne({ email });
+    if (!admin) {
         return res.status(401).json({ message: 'Unauthorized' });
     }
-    req.user = user;
-    console.log('User authenticated:', req.user);
+    req.admin = admin;
     next();
-};
+}
 
-module.exports = authMiddleware;
+module.exports = AdminAuth;

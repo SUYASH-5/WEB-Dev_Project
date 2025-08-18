@@ -15,16 +15,18 @@ const enterClass = async (req, res) => {
         if (existingClass.status !== 'started') {
             return res.status(400).json({ message: 'Class is not currently active' });
         }
-        if(existingClass.blocked.includes(userId)) {
-            return res.status(403).json({ message: 'You are blocked from this class' });
+        if (existingClass.blocked.some(id => id.equals(userId))) {
+          return res.status(403).json({ message: 'You are blocked from this class' });
         }
-        const user= await Teacher.findById(userId)||await Student.findById(userId);
-        if(user.role =='teacher') {
-            existingClass.teacher= userId;
+        const user = await Teacher.findById(userId) || await Student.findById(userId);
+        if (user.role == 'teacher') {
+            existingClass.teacher = userId;
         } else {
-            existingClass.students.push(userId);
+            await Class.findByIdAndUpdate(id, { $addToSet: { students: userId } }, { new: true });
         }
         await existingClass.save();
+
+        io.to(id).emit('userJoined', { userId, role: user.role });
 
         res.status(200).json({ message: 'Successfully entered class', class: existingClass });
     } catch (error) {
@@ -53,6 +55,9 @@ const saveClassActivity = async (req, res) => {
         existingClass.remarks = remark;
         await existingClass.save();
 
+        io.to(classId).emit('codeUpdate', { code });
+        io.to(classId).emit('remarkUpdate', { remark });
+
         res.status(200).json({ message: 'Activity saved successfully', class: existingClass });
     } catch (error) {
         console.error('Error saving class activity:', error);
@@ -80,6 +85,8 @@ const leaveClass = async (req, res) => {
             },
             { new: true }                           
         );
+
+        io.to(id).emit('userLeft', { userId });
 
         res.status(200).json({ message: 'Successfully left class', class: updatedClass });
     }

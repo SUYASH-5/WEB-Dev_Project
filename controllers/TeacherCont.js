@@ -139,6 +139,10 @@ const removeStudent = async (req, res) => {
             return res.status(404).json({ message: 'Class not found or student not in class' });
         }
 
+        io.to(classId).emit('userKicked', { userId: studentId });
+        io.to(classId).emit('userBlocked', { userId: studentId });
+        io.to(classId).emit('userLeft', { userId: studentId });
+
         res.status(200).json({ message: 'Student removed from class successfully', class: updatedClass });
     } catch (error) {
         console.error('Error removing student from class:', error);

@@ -4,6 +4,7 @@ const Group = require('../models/groupDB');
 const bcrypt = require('bcrypt');
 const Validator =require('validator');
 const tokenGen = require('../utils/tokenGen');
+
 require('dotenv').config();
 
 
@@ -160,4 +161,12 @@ const deleteUser = async (req, res) => {
     }
 };
 
-module.exports = {create, login, update, deleteUser};
+const forgetPassword=async (req,res)=>{
+
+};
+const UpdatePassword = async (req,res)=>{
+
+};
+
+
+module.exports = {create, login, update, deleteUser, forgetPassword,UpdatePassword};

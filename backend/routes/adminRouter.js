@@ -1,4 +1,4 @@
-const {create,login,deleteGroup,getStudents,getTeachers,getGroups,updateTeacher,removeStudent,addRemark,removeRemark,verifyTeacher,ignoreTeacher,addStudent,getPendingRequests,getAttendance}=require('../controllers/adminCont');
+const {create,login,deleteGroup,getStudents,getTeachers,getGroups,removeTeacher,updateTeacher,removeStudent,addRemark,removeRemark,verifyTeacher,ignoreTeacher,addStudent,getPendingRequests,getAttendance}=require('../controllers/adminCont');
 const AdminAuth = require('../middleware/AdminAuth');
 const express = require('express');
 const router = express.Router();
@@ -18,5 +18,6 @@ router.put('/removeStudent/:id', AdminAuth, removeStudent);
 router.put('/addRemark/:id', AdminAuth, addRemark);
 router.put('/removeRemark/:id', AdminAuth, removeRemark);
 router.get('/getAttendance', AdminAuth, getAttendance);
+router.delete('/removeTeacher/:id', AdminAuth, removeTeacher);
 
 module.exports = router;

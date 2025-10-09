@@ -3,6 +3,7 @@ const app = express();
 const {createServer} =require('http');
 const {Server}=require('socket.io');
 const httpServer = createServer(app);
+const cors = require('cors');
 const io = new Server(httpServer, {
     cors: {
         origin: '*'
@@ -54,8 +55,12 @@ const adminApp=express();
 const adminRouter = require('./routes/adminRouter');
 
 adminApp.use(express.json());
-adminApp.use('/admin', adminRouter);
 
+adminApp.use(cors({
+    origin: '*',
+}));
+
+adminApp.use('/admin', adminRouter);
 dbConnect().then(() => {
     adminApp.listen(process.env.AdminPORT, () => {
         console.log(`Admin server is running on port ${process.env.AdminPORT}`);

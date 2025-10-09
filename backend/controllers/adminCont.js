@@ -259,4 +259,22 @@ const getAttendance = async (req, res) => {
     }
 };
 
-module.exports = { create, login, deleteGroup,getStudents, getTeachers, getGroups, updateTeacher, removeStudent, addStudent, addRemark, removeRemark, verifyTeacher, ignoreTeacher, getPendingRequests, getAttendance };
+const removeTeacher = async (req, res) => {
+    try {
+        const { id } = req.params;
+        if (!id) {
+            return res.status(400).json({ message: 'Teacher ID is required' });
+        }
+        const teacher = await Teacher.findById(id);
+        if (!teacher) {
+            return res.status(404).json({ message: 'Teacher not found' });
+        }
+        await teacher.remove();
+        res.status(200).json({ message: 'Teacher removed successfully' });
+    } catch (error) {
+        console.error('Error removing teacher:', error);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+}
+
+module.exports = { create, login, deleteGroup,getStudents, getTeachers, getGroups, updateTeacher, removeStudent, addStudent, addRemark, removeRemark, verifyTeacher, ignoreTeacher, getPendingRequests, getAttendance, removeTeacher };

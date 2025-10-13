@@ -36,11 +36,16 @@ const login = async (req, res) => {
             return res.status(401).json({ message: 'Invalid credentials' });
         }
         const token = tokenGen(admin);
+        res.cookie("token", token, { httpOnly: true, secure: false, sameSite: 'Lax', maxAge: 24 * 60 * 60 * 1000 });
         res.status(200).json({ message: 'Login successful', token });
     } catch (error) {
         console.error('Error logging in admin:', error);
         res.status(500).json({ message: 'Internal server error' });
     }
+}
+const logout = (req, res) => {
+    res.clearCookie("token", { httpOnly: true, secure: true, sameSite: 'Strict' });
+    res.status(200).json({ message: 'Logout successful' });
 }
 
 const deleteGroup = async (req, res) => {
@@ -277,4 +282,4 @@ const removeTeacher = async (req, res) => {
     }
 }
 
-module.exports = { create, login, deleteGroup,getStudents, getTeachers, getGroups, updateTeacher, removeStudent, addStudent, addRemark, removeRemark, verifyTeacher, ignoreTeacher, getPendingRequests, getAttendance, removeTeacher };
+module.exports = { create, login, logout, deleteGroup,getStudents, getTeachers, getGroups, updateTeacher, removeStudent, addStudent, addRemark, removeRemark, verifyTeacher, ignoreTeacher, getPendingRequests, getAttendance, removeTeacher };

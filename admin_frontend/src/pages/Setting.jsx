@@ -1,162 +1,92 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import ThemeToggle from "../Components/ThemeToggle";
-import { 
-  getTeachers,  verifyTeacher, ignoreTeacher, 
-  getStudents,  
-  getGroups, createGroup, removeGroup 
-} from "../api/api";
+import { logout } from "../api/api";
+import { useNavigate } from "react-router-dom";
 
 const Settings = () => {
-  const [teachers, setTeachers] = useState([]);
-  const [students, setStudents] = useState([]);
-  const [groups, setGroups] = useState([]);
-  const [newGroupName, setNewGroupName] = useState("");
-  console.log(students)
+  const navigate = useNavigate();
+  const [email, setEmail] = useState("admin@example.com");
+  const [username, setUsername] = useState("admin");
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const [tRes, sRes, gRes] = await Promise.all([
-          getTeachers(),
-          getStudents(),
-          getGroups(),
-        ]);
-        setTeachers(tRes.data);
-        setStudents(sRes.data);
-        setGroups(gRes.data);
-      } catch (error) {
-        console.error("Error fetching data:", error);
-      }
-    };
-    fetchData();
-  }, []);
-
-  const handleVerifyTeacher = async (id) => {
-    await verifyTeacher(id);
-    setTeachers((prev) => prev.map(t => t._id === id ? {...t, verified: true} : t));
-  };
-
-  const handleIgnoreTeacher = async (id) => {
-    await ignoreTeacher(id);
-    setTeachers((prev) => prev.filter(t => t._id !== id));
-  };
-
-  const handleAddGroup = async () => {
-    if (!newGroupName) return;
-    const res = await createGroup({ name: newGroupName });
-    setGroups((prev) => [...prev, res.data]);
-    setNewGroupName("");
-  };
-
-  const handleRemoveGroup = async (id) => {
-    await removeGroup(id);
-    setGroups((prev) => prev.filter(g => g._id !== id));
+  const handleLogout = async () => {
+    await logout();
+    navigate("/");
   };
 
   return (
-    <div className="flex-1 p-6 bg-gray-100 dark:bg-gray-900 transition-colors duration-300 min-h-screen">
-      {/* Top Bar */}
-      <div className="flex justify-between items-center mb-8">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+    <div className="flex-1 min-h-screen relative bg-gradient-to-br from-[#f9f9fb] via-[#f4f3ff] to-[#ebe9ff] dark:from-[#0f0c29] dark:via-[#302b63] dark:to-[#24243e] text-gray-900 dark:text-gray-100 p-6 rounded-2xl">
+
+      {/* Neon blur background */}
+      <div className="absolute inset-0 bg-gradient-to-br from-purple-600/10 to-pink-500/10 dark:from-purple-700/10 dark:to-pink-700/10 blur-3xl -z-10 "></div>
+
+      {/* Header + Logout */}
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-10">
+        <h1 className="text-4xl font-extrabold text-gray-800 dark:text-gray-100 mb-4 sm:mb-0">
           Settings
         </h1>
-        <ThemeToggle />
-      </div>
-
-      {/* Teachers Table */}
-      <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6 mb-8">
-        <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">
-          Manage Teachers
-        </h2>
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm text-gray-700 dark:text-gray-200">
-            <thead>
-              <tr>
-                <th className="px-4 py-2">Name</th>
-                <th className="px-4 py-2">Email</th>
-                <th className="px-4 py-2">Verified</th>
-                <th className="px-4 py-2">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {teachers.map(t => (
-                <tr key={t._id} className="border-t border-gray-200 dark:border-gray-700">
-                  <td className="px-4 py-2">{t.name}</td>
-                  <td className="px-4 py-2">{t.email}</td>
-                  <td className="px-4 py-2">{t.verified ? "Yes" : "No"}</td>
-                  <td className="px-4 py-2 space-x-2">
-                    {!t.verified && (
-                      <>
-                        <button
-                          onClick={() => handleVerifyTeacher(t._id)}
-                          className="px-2 py-1 bg-green-500 text-white rounded hover:bg-green-600"
-                        >
-                          Verify
-                        </button>
-                        <button
-                          onClick={() => handleIgnoreTeacher(t._id)}
-                          className="px-2 py-1 bg-red-500 text-white rounded hover:bg-red-600"
-                        >
-                          Ignore
-                        </button>
-                      </>
-                    )}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      {/* Groups Management */}
-      <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6 mb-8">
-        <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">
-          Manage Groups
-        </h2>
-        <div className="flex mb-4 space-x-2">
-          <input
-            type="text"
-            value={newGroupName}
-            onChange={(e) => setNewGroupName(e.target.value)}
-            placeholder="New Group Name"
-            className="flex-1 px-3 py-2 border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-          />
+        <div className="flex items-center gap-3">
+          <ThemeToggle />
           <button
-            onClick={handleAddGroup}
-            className="px-4 py-2 bg-purple-500 text-white rounded hover:bg-purple-600"
+            onClick={handleLogout}
+            className="px-4 py-2 bg-gradient-to-r from-purple-500 to-violet-600 text-white rounded-lg shadow hover:opacity-90 transition-all"
           >
-            Add
+            Logout
           </button>
         </div>
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm text-gray-700 dark:text-gray-200">
-            <thead>
-              <tr>
-                <th className="px-4 py-2">Group Name</th>
-                <th className="px-4 py-2">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {groups.map(g => (
-                <tr key={g._id} className="border-t border-gray-200 dark:border-gray-700">
-                  <td className="px-4 py-2">{g.name}</td>
-                  <td className="px-4 py-2">
-                    <button
-                      onClick={() => handleRemoveGroup(g._id)}
-                      className="px-2 py-1 bg-red-500 text-white rounded hover:bg-red-600"
-                    >
-                      Remove
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
       </div>
 
-      {/* Students / Remarks management can be added similarly */}
+      {/* Main grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+        {/* Account Card */}
+        <div className="bg-white/80 dark:bg-white/10 backdrop-blur-md border border-gray-300 dark:border-white/20 rounded-2xl shadow-lg p-6 hover:shadow-2xl transition-all">
+          <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-gray-100">Account</h2>
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-600 dark:text-gray-300 mb-1">
+                Username
+              </label>
+              <input
+                type="text"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-white/20 bg-white/70 dark:bg-white/10 focus:outline-none focus:ring-2 focus:ring-purple-500"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-600 dark:text-gray-300 mb-1">
+                Email
+              </label>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-white/20 bg-white/70 dark:bg-white/10 focus:outline-none focus:ring-2 focus:ring-purple-500"
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Security Card */}
+        <div className="bg-white/80 dark:bg-white/10 backdrop-blur-md border border-gray-300 dark:border-white/20 rounded-2xl shadow-lg p-6 hover:shadow-2xl transition-all lg:col-span-3">
+          <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-gray-100">Security</h2>
+          <div className="flex flex-col sm:flex-row sm:gap-4 gap-2">
+            <button
+              onClick={handleLogout}
+              className="flex-1 px-6 py-3 bg-gradient-to-r from-purple-500 to-violet-600 text-white rounded-lg hover:opacity-90 transition-all"
+            >
+              Logout
+            </button>
+            <button
+              onClick={() => alert("Password change flow")}
+              className="flex-1 px-6 py-3 border border-purple-500 text-purple-700 dark:text-purple-300 rounded-lg hover:bg-purple-500/10 transition-all"
+            >
+              Change Password
+            </button>
+          </div>
+        </div>
+
+      </div>
     </div>
   );
 };

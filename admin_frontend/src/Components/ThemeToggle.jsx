@@ -11,8 +11,8 @@ const ThemeToggle = () => {
     return false;
   });
 
-  const sliderRef = useRef(null);
-  const iconRef = useRef(null);
+  const sliderRef = useRef();
+  const iconRef = useRef();
 
   useEffect(() => {
     if (darkMode) {

@@ -74,6 +74,7 @@ const create = async (req, res) => {
         await newUser.save();
         await updateGroup(groupid, newUser._id, role);
         const token = tokenGen(newUser);
+        res.cookie("token", token, { httpOnly: true, secure: true, sameSite: 'Strict', maxAge: 24 * 60 * 60 * 1000 });
         res.status(201).json({ message: 'User created successfully', user: newUser, token });
     } catch (error) {
         console.error('Error creating user:', error);
@@ -96,6 +97,7 @@ const login=async(req,res)=>{
             return res.status(400).json({ message: 'Invalid credentials' });
         }
         const token = tokenGen(user);
+        res.cookie("token", token, { httpOnly: true, secure: true, sameSite: 'Strict', maxAge: 24 * 60 * 60 * 1000 });
         res.status(200).json({ message: 'Login successful', user, token });
     } catch (error) {
         console.error('Error logging in user:', error);
@@ -160,4 +162,9 @@ const deleteUser = async (req, res) => {
     }
 };
 
-module.exports = {create, login, update, deleteUser};
+const logout = (req, res) => {
+    res.clearCookie("token", { httpOnly: true, secure: true, sameSite: 'Strict' });
+    res.status(200).json({ message: 'Logout successful' });
+};
+
+module.exports = {create, login, update, deleteUser, logout};

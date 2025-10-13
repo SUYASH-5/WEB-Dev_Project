@@ -18,7 +18,6 @@ const Login = () => {
     try {
       const response = await loginAdmin(data);
       console.log(response);
-      localStorage.setItem('token', response.data.token);
       Navigate('/dashboard');
     } catch (error) {
       console.error(error);

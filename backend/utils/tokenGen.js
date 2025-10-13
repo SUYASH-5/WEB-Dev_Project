@@ -6,9 +6,9 @@ const tokenGen = (user) => {
   const token =  jwt.sign({
       data: {
           email: user.email,
-          password: user.password
+          username: user.username
       }
-  }, secret, { expiresIn: '1h' });
+  }, secret, { expiresIn: '1d' });
   return token;
 }
 module.exports = tokenGen;

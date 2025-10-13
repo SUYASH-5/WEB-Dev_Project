@@ -6,7 +6,7 @@ const studentSchema = new mongoose.Schema({
   password: { type: String, required: true },
   role: { type: String, default: 'student' },
   attendance: { type: [Date], default: [] },
-  group: { type: String, required: true },
+  group: { type: mongoose.Schema.Types.ObjectId, ref: 'Group', required: true },
   remark: { type: String, default: 'None' }
 },{
     timestamps: true

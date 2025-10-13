@@ -1,7 +1,6 @@
 const Teacher = require('../models/teacherDB');
 const Student = require('../models/studentDB');
 const Class = require('../models/classDB');
-const e = require('express');
 
 const enterClass = async (req, res) => {
     try {

@@ -54,10 +54,8 @@ const Sidebar = ({ activeSection, setActiveSection }) => {
              dark:text-gray-100"
     >
       {/* Logo */}
-      <div className="flex items-center mb-10 space-x-3">
-        <div className="bg-purple-500 dark:bg-violet-500 p-2 rounded-lg text-white font-bold text-lg">
-          🧠
-        </div>
+      <div className="flex items-center mb-5 space-x-2">
+          <img src="./logo.png" alt="Logo" className="h-20 w-15" />
         <h1 className="text-xl font-semibold tracking-wide">Admin Panel</h1>
       </div>
 

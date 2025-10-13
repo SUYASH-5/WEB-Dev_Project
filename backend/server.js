@@ -1,4 +1,5 @@
 const express =require('express');
+const cookieParser = require('cookie-parser');
 const app = express();
 const {createServer} =require('http');
 const {Server}=require('socket.io');
@@ -6,7 +7,8 @@ const httpServer = createServer(app);
 const cors = require('cors');
 const io = new Server(httpServer, {
     cors: {
-        origin: '*'
+        origin: 'http://localhost:5177',
+        credentials: true
     }
 });
 const socketHandler=require('./socket/socketHandler');
@@ -20,6 +22,7 @@ const classRouter = require('./routes/classRouter');
 const teacherRouter = require('./routes/TeachHandlerRouter');
 const codeRouter = require('./routes/codeRouter');
 app.use(express.json());
+app.use(cookieParser());
 
 socketHandler(io);
 
@@ -55,9 +58,11 @@ const adminApp=express();
 const adminRouter = require('./routes/adminRouter');
 
 adminApp.use(express.json());
+adminApp.use(cookieParser());
 
 adminApp.use(cors({
-    origin: '*',
+    origin: 'http://localhost:5173',
+    credentials: true
 }));
 
 adminApp.use('/admin', adminRouter);

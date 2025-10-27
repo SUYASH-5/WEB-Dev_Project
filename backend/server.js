@@ -23,6 +23,7 @@ const teacherRouter = require('./routes/TeachHandlerRouter');
 const codeRouter = require('./routes/codeRouter');
 app.use(express.json());
 app.use(cookieParser());
+app.use(cors({ origin: 'http://localhost:5177', credentials: true }));
 
 socketHandler(io);
 

@@ -1,14 +1,10 @@
 import axios from 'axios';
 
+
+
 const API = axios.create({
   baseURL: import.meta.env.VITE_API_URL + '/admin',
   headers: { 'Content-Type': 'application/json' }
-});
-
-API.interceptors.request.use((config) => {
-  const token = localStorage.getItem('token');
-  if (token) config.headers.Authorization = `Bearer ${token}`;
-  return config;
 });
 
 // AUTH
@@ -25,14 +21,14 @@ export const removeGroup = (id) => API.delete(`/removeGroup/${id}`,{withCredenti
 export const getTeachers = () => API.get('/getTeachers',{withCredentials: true});
 export const updateTeacher = (id, data) => API.put(`/updateTeacher/${id}`, data,{withCredentials: true});
 export const verifyTeacher = (id) => API.put(`/verifyTeacher/${id}`,{},{withCredentials: true});
-export const ignoreTeacher = (id) => API.put(`/ignoreTeacher/${id}`,{withCredentials: true});
+export const ignoreTeacher = (id) => API.put(`/ignoreTeacher/${id}`,{}, {withCredentials: true});
 export const getPendingRequests = () => API.get('/pendingRequests',{withCredentials: true});
 export const removeTeacher = (id) => API.delete(`/removeTeacher/${id}`,{withCredentials: true});
 
 // STUDENTS
 export const getStudents = () => API.get('/getStudents',{withCredentials: true});
 export const addStudent = (id) => API.put(`/addStudent/${id}`,{withCredentials: true});
-export const removeStudent = (id) => API.put(`/removeStudent/${id}`,{withCredentials: true});
+export const removeStudent = (id) => API.put(`/removeStudent/${id}`,{}, {withCredentials: true});
 
 // REMARKS
 export const addRemark = (id, data) => API.put(`/addRemark/${id}`, data,{withCredentials: true});

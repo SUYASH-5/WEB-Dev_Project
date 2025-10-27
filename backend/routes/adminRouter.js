@@ -26,7 +26,6 @@ router.get("/verify-session", (req, res) => {
   const token = req.cookies.token;
   if (!token) return res.status(401).json({ message: "Not authenticated" });
 
-  // verify token/session logic
   const userdata = jwt.verify(token, process.env.JWT_SECRET);
   if (!userdata) return res.status(401).json({ message: "Session expired" });
 

@@ -5,16 +5,16 @@ const jwt = require('jsonwebtoken');
 const AdminAuth = async (req, res, next) => {
     const token = req.cookies.token;
     if (!token) {
-        return res.status(401).json({ message: 'Unauthorized' });
+        return res.status(401).json({ message: 'Unauthorized-no token provided' });
     }
     const userdata = jwt.verify(token, process.env.JWT_SECRET);
     if (!userdata) {
-        return res.status(401).json({ message: 'Unauthorized' });
+        return res.status(401).json({ message: 'Unauthorized-no user data' });
     }
-    const { email } = userdata.data;
-    const admin = await Admin.findOne({ email });
+    const { id } = userdata;
+    const admin = await Admin.findById(id);
     if (!admin) {
-        return res.status(401).json({ message: 'Unauthorized' });
+        return res.status(401).json({ message: 'Unauthorized - User not found' });
     }
     req.admin = admin;
     next();

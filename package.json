@@ -1,6 +1,11 @@
 {
   "private": true,
-  "workspaces": ["frontend", "admin_frontend", "backend", "shared"],
+  "workspaces": [
+    "frontend",
+    "admin_frontend",
+    "backend",
+    "shared"
+  ],
   "scripts": {
     "dev": "concurrently \"npm run dev -w frontend\" \"npm run dev -w admin_frontend\" \"npm run dev -w backend\""
   },

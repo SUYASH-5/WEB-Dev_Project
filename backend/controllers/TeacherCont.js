@@ -1,22 +1,39 @@
 const Student = require('../models/studentDB');
 const Class = require('../models/classDB');
+const Group = require('../models/groupDB');
 
 const createClass = async (req, res) => {
     try{
         const group = req.user.group;
+        const teacher = req.user._id;
         if (!group) {
             return res.status(400).json({ message: 'Group not found' });
         }
-        const {title,status,duration,startTime} = req.body;
-        if (!title || !status || !duration || !startTime) {
+        const {title,description,startTime,capacity} = req.body;
+        if (!title || !description  || !startTime || !capacity) {
             return res.status(400).json({ message: 'All fields are required' });
+        }
+        const currentTime = new Date();
+        console.log("time decided: ",new Date(startTime));
+        console.log("current time: ", currentTime);
+        let status = '';
+        if(currentTime == new Date(startTime)) {
+            status = 'started';
+        }
+        else if(currentTime < new Date(startTime)) {
+            status = 'upcoming';
+        }
+        else {
+            return res.status(400).json({ message: 'Invalid start time' });
         }
         const Nclass = { 
             title,
+            description,
             status,
             group,
-            duration, 
-            startTime 
+            startTime,
+            teacher,
+            capacity
         };
         const newClass = new Class(Nclass);
         await newClass.save();
@@ -30,13 +47,14 @@ const createClass = async (req, res) => {
 const updateClass = async (req, res) => {
     try {
         const { id } = req.params;
+        const { group } = req.user;
         const { title, status, duration, startTime, code, remarks } = req.body;
-        if (!id || !title || !status || !duration || !startTime || !code || !remarks) {
-            return res.status(400).json({ message: 'All fields are required' });
-        }
         const existingClass = await Class.findById(id);
         if (!existingClass) {
             return res.status(404).json({ message: 'Class not found' });
+        }
+        if (!existingClass.group.equals(group)) {
+            return res.status(403).json({ message: 'Forbidden' });
         }
         if(existingClass.status == 'upcoming') {
             await Class.findByIdAndUpdate(id, {
@@ -68,6 +86,7 @@ const updateClass = async (req, res) => {
 const deleteClass = async (req, res) => {
     try {
         const { id } = req.params;
+        const { group } = req.user;
         if (!id) {
             return res.status(400).json({ message: 'Class ID is required' });
         }
@@ -75,8 +94,11 @@ const deleteClass = async (req, res) => {
         if (!existingClass) {
             return res.status(404).json({ message: 'Class not found' });
         }
-        if (existingClass.status == 'ended') {
-            return res.status(400).json({ message: 'Class cannot be deleted' });
+        if (!existingClass.group.equals(group)) {
+            return res.status(403).json({ message: 'Forbidden' });
+        }
+        if(existingClass.status== 'Started' && existingClass.students.length > 0) {
+            return res.status(400).json({ message: 'Ongoing class cannot be deleted' });
         }
         const deletedClass = await Class.findByIdAndDelete(id);
         if (!deletedClass) {
@@ -140,12 +162,93 @@ const removeStudent = async (req, res) => {
         }
 
         io.to(classId).emit('userKicked', { userId: studentId });
-        io.to(classId).emit('userBlocked', { userId: studentId });
-        io.to(classId).emit('userLeft', { userId: studentId });
 
         res.status(200).json({ message: 'Student removed from class successfully', class: updatedClass });
     } catch (error) {
         console.error('Error removing student from class:', error);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+};
+
+const groupControl = async (req, res) => {
+    try {
+        const { group } = req.user;
+        const gData = await Group.findById(group).populate('students', 'name email').lean();
+        if (!gData) {
+            return res.status(400).json({ message: 'Group not found' });
+        }
+        res.status(200).json({ message: 'Group found', group: gData });
+    } catch (error) {
+        console.error('Error in group control:', error);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+}
+
+const blockStudent = async (req, res) => {
+    try {
+        const { group } = req.user;
+        const { studentId } = req.params;
+        if (!group || !studentId) {
+            return res.status(400).json({ message: 'Group and Student ID are required' });
+        }
+
+        const updatedGroup = await Group.findByIdAndUpdate(
+            group,
+            { $addToSet: { blockedStudents: studentId } , $pull: { students: studentId } },
+            { new: true }
+        );
+
+        if (!updatedGroup) {
+            return res.status(404).json({ message: 'Group not found' });
+        }
+
+        res.status(200).json({ message: 'Student blocked successfully', group: updatedGroup });
+    } catch (error) {
+        console.error('Error blocking student:', error);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+}
+
+const addStudentToGroup = async (req, res) => {
+    try {
+        const { group } = req.user;
+        const { studentId } = req.params;
+        if (!group || !studentId) {
+            return res.status(400).json({ message: 'Group and Student ID are required' });
+        }
+
+        const updatedGroup = await Group.findByIdAndUpdate(
+            group,
+            { $addToSet: { students: studentId } , $pull: { blockedStudents: studentId }},
+            { new: true }
+        );
+
+        if (!updatedGroup) {
+            return res.status(404).json({ message: 'Group not found' });
+        }
+
+        res.status(200).json({ message: 'Student added to group successfully', group: updatedGroup });
+    } catch (error) {
+        console.error('Error adding student to group:', error);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+}
+
+const updateCode = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { code } = req.body;
+        const existingClass = await Class.findById(id);
+        if (!existingClass) {
+            return res.status(404).json({ message: 'Class not found' });
+        }
+
+        existingClass.code = code;
+        await existingClass.save();
+
+        res.status(200).json({ message: 'Class code updated successfully', class: existingClass });
+    } catch (error) {
+        console.error('Error updating class code:', error);
         res.status(500).json({ message: 'Internal server error' });
     }
 };
@@ -155,5 +258,9 @@ module.exports = {
     updateClass,
     deleteClass,
     classEnded,
-    removeStudent
+    updateCode,
+    removeStudent,
+    groupControl,
+    blockStudent,
+    addStudentToGroup
 };

@@ -2,6 +2,39 @@ const Teacher = require('../models/teacherDB');
 const Student = require('../models/studentDB');
 const Class = require('../models/classDB');
 
+const getClasses = async (req, res) => {
+    try {
+        const groupId = req.groupId;
+        const classes = await Class.find({ group:groupId });
+        res.status(200).json({ classes });
+    }
+    catch (error) {
+        console.error('Error fetching classes:', error);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+};
+
+const getClassById = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const groupId = req.groupId;
+        const existingClass = await Class.findById(id).populate('group', 'name').populate('teacher', 'name email').populate('students', 'name email').lean();
+        if (existingClass.group._id.toString() !== groupId.toString()) {
+            return res.status(403).json({ message: 'Forbidden' });
+        }
+        if (!existingClass) {
+            return res.status(404).json({ message: 'Class not found' });
+        }
+        res.status(200).json({ class: existingClass });
+    }
+    catch (error) {
+        console.error('Error fetching class by ID:', error);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+};
+
+
+
 const enterClass = async (req, res) => {
     try {
         const { id } = req.params;
@@ -11,21 +44,17 @@ const enterClass = async (req, res) => {
         if (!existingClass) {
             return res.status(404).json({ message: 'Class not found' });
         }
-        if (existingClass.status !== 'started') {
+        if (existingClass.status !== 'Started') {
             return res.status(400).json({ message: 'Class is not currently active' });
         }
         if (existingClass.blocked.some(id => id.equals(userId))) {
           return res.status(403).json({ message: 'You are blocked from this class' });
         }
-        const user = await Teacher.findById(userId) || await Student.findById(userId);
-        if (user.role == 'teacher') {
-            existingClass.teacher = userId;
-        } else {
-            await Class.findByIdAndUpdate(id, { $addToSet: { students: userId } }, { new: true });
+        const user = await Student.findById(userId);
+        if (user) {
+            await Class.findByIdAndUpdate(id, { $addToSet: { students: user._id } }, { new: true });
         }
         await existingClass.save();
-
-        io.to(id).emit('userJoined', { userId, role: user.role });
 
         res.status(200).json({ message: 'Successfully entered class', class: existingClass });
     } catch (error) {
@@ -98,5 +127,7 @@ const leaveClass = async (req, res) => {
 module.exports = {
     enterClass,
     saveClassActivity,
-    leaveClass
+    leaveClass,
+    getClasses,
+    getClassById
 };

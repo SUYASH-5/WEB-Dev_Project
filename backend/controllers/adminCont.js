@@ -35,7 +35,7 @@ const login = async (req, res) => {
         if (!isMatch) {
             return res.status(401).json({ message: 'Invalid credentials' });
         }
-        const token = tokenGen(admin);
+        const token = tokenGen(admin,'admin');
         res.cookie("token", token, { httpOnly: true, secure: false, sameSite: 'Lax', maxAge: 24 * 60 * 60 * 1000 });
         res.status(200).json({ message: 'Login successful', token });
     } catch (error) {
@@ -270,11 +270,15 @@ const removeTeacher = async (req, res) => {
         if (!id) {
             return res.status(400).json({ message: 'Teacher ID is required' });
         }
-        const teacher = await Teacher.findById(id);
+        const group = await Group.findOne({ teacher: id });
+        if (group) {
+            group.teacher = null;
+            await group.save();
+        }
+        const teacher = await Teacher.findByIdAndDelete(id);
         if (!teacher) {
             return res.status(404).json({ message: 'Teacher not found' });
         }
-        await teacher.remove();
         res.status(200).json({ message: 'Teacher removed successfully' });
     } catch (error) {
         console.error('Error removing teacher:', error);

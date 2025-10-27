@@ -1,21 +1,30 @@
 const mongoose = require('mongoose');
 
+const StudentAttended=new mongoose.Schema({
+    student: { type: mongoose.Schema.Types.ObjectId, ref: 'Student', required: true },
+    period :[{
+        startTime: { type: Date, required: true },
+        endTime: { type: Date, required: true }
+    }],
+    attended: { type: Boolean, required: true, default: false }
+})
 const classSchema = new mongoose.Schema({
     title: { type: String, required: true },
+    description: { type: String },
     group: { type: mongoose.Schema.Types.ObjectId, ref: 'Group', required: true },
-    status: { type: String, enum: ['upcoming','started', 'ended'], required: true },
-    duration: { type: Number , required: true}, 
+    status: { type: String, enum: ['upcoming','Started', 'ended'], required: true },
+    duration: { type: Number }, 
     teacher: { type: mongoose.Schema.Types.ObjectId, ref: 'Teacher' },
-    students: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Student' }],
+    students: [StudentAttended],
     blocked: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Student' }],
     startTime: { type: Date, required: true },
     endTime: { type: Date, default: null },
     code: { type: String },
-    remarks: { type: String }
+    remarks: { type: String },
+    capacity: { type: Number, required: true }
 },{
     timestamps: true
 })
-
 const Class = mongoose.model('Class', classSchema);
 
 module.exports = Class;

@@ -38,6 +38,8 @@ const Students = () => {
     try {
       await removeStudent(id);
       fetchStudents();
+      fetchGroups();
+
     } catch (err) {
       console.error(err);
     }

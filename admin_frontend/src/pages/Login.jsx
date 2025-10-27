@@ -1,15 +1,15 @@
-import { loginAdmin } from "../api/api";
+import { loginAdmin,verifySession } from "../api/api";
 import ThemeToggle from "../Components/ThemeToggle";
 import { useNavigate } from "react-router-dom";
 
-
 const Login = () => {
   const Navigate = useNavigate();
-  const token = localStorage.getItem('token');
-  if (token) {
+  const token = verifySession();
+  if (token.response?.status === 200) {
     Navigate('/dashboard');
-    return null;
   }
+
+  let errorMsg = '';
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -17,8 +17,12 @@ const Login = () => {
     const data = Object.fromEntries(formData);
     try {
       const response = await loginAdmin(data);
-      console.log(response);
-      Navigate('/dashboard');
+      if(response.status === 200){
+        Navigate('/dashboard');
+      }
+      else{
+        errorMsg = response.data?.message || 'Login failed';
+      }
     } catch (error) {
       console.error(error);
     }
@@ -96,6 +100,9 @@ const Login = () => {
             >
               Sign In
             </button>
+            <p className="mt-4 text-center text-sm text-gray-500 dark:text-gray-400">
+              {errorMsg}
+            </p>
           </form>
         </div>
 

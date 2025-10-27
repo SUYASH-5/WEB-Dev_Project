@@ -5,7 +5,7 @@ const teachSchema= new mongoose.Schema({
   email: { type: String, required: true, unique: true },
   gender: { type: String, required: true },
   password: { type: String, required: true },
-  group: { type: String, required: true },
+  group: { type: mongoose.Schema.Types.ObjectId, ref: 'Group', required: true },
   role: { type: String, default: 'teacher' },
   ValidityState: { type: String, enum: ['pending', 'invalid','valid'], default: 'pending' }
 },{

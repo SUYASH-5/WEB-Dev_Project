@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import gsap from "gsap";
+import { Sun, Moon } from "lucide-react"; // ✅ clean vector icons
 
 const ThemeToggle = () => {
   const [darkMode, setDarkMode] = useState(() => {
@@ -12,8 +13,9 @@ const ThemeToggle = () => {
   });
 
   const sliderRef = useRef(null);
-  const iconRef = useRef(null);
+  const iconWrapperRef = useRef(null);
 
+  // 🔄 Apply theme to document + localStorage
   useEffect(() => {
     if (darkMode) {
       document.documentElement.classList.add("dark");
@@ -32,22 +34,14 @@ const ThemeToggle = () => {
       backgroundColor: darkMode ? "#1f2937" : "#f3f4f6",
     });
 
-    tl.to(
-      iconRef.current,
+    gsap.fromTo(
+      iconWrapperRef.current,
+      { rotate: 0 },
       {
-        rotation: darkMode ? 360 : -360,
-        opacity: 0,
-        scale: 0.5,
-        duration: 0.2,
-        yoyo: true,
-        repeat: 1,
-        onRepeat: () => {
-          iconRef.current.innerHTML = darkMode
-            ? "🌙"
-            : "☀️";
-        },
-      },
-      "<"
+        rotate: darkMode ? 360 : -360,
+        duration: 0.6,
+        ease: "power2.inOut",
+      }
     );
   }, [darkMode]);
 
@@ -59,9 +53,15 @@ const ThemeToggle = () => {
       >
         <div
           ref={sliderRef}
-          className="absolute left-1 top-1 w-5 h-5 bg-white rounded-full shadow-md flex items-center justify-center text-sm"
+          className="absolute left-1 top-1 w-5 h-5 bg-white rounded-full shadow-md flex items-center justify-center text-sm overflow-hidden"
         >
-          <span ref={iconRef}>{darkMode ? "🌙" : "☀️"}</span>
+          <div ref={iconWrapperRef}>
+            {darkMode ? (
+              <Moon className="w-3.5 h-3.5 text-gray-800 dark:text-gray-100" />
+            ) : (
+              <Sun className="w-3.5 h-3.5 text-yellow-400" />
+            )}
+          </div>
         </div>
       </div>
       <span className="text-sm text-gray-600 dark:text-gray-400 hidden sm:inline">

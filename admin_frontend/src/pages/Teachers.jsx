@@ -14,6 +14,8 @@ import { Check, XCircle, Trash2, Search, LogOut } from "lucide-react";
 
 const COLORS = ["#8b5cf6", "#a78bfa", "#c4b5fd"];
 
+
+
 const Teacher = () => {
   const navigate = useNavigate();
   const [teachers, setTeachers] = useState([]);
@@ -59,7 +61,9 @@ const Teacher = () => {
     navigate("/");
   };
 
-  const verifiedCount = teachers.filter((t) => t.ValidityState === "valid").length;
+  const verifiedCount = teachers.filter(
+    (t) => t.ValidityState === "valid"
+  ).length;
   const pendingCount = pendingTeachers.length;
 
   const teacherPieData = [
@@ -194,6 +198,10 @@ const Teacher = () => {
                       <span className="text-emerald-600 dark:text-emerald-400 font-semibold">
                         Verified
                       </span>
+                    ) : t.ValidityState === "invalid" ? (
+                      <span className="text-red-600 dark:text-red-400 font-semibold">
+                        Rejected
+                      </span>
                     ) : (
                       <span className="text-amber-600 dark:text-amber-400 font-semibold">
                         Pending
@@ -204,7 +212,7 @@ const Teacher = () => {
                     {new Date(t.createdAt).toLocaleDateString()}
                   </td>
                   <td className="px-4 py-3 flex justify-center flex-wrap gap-2">
-                    {t.ValidityState !== "valid" && (
+                    {t.ValidityState === "pending" && (
                       <>
                         <button
                           onClick={() => handleVerify(t._id)}
